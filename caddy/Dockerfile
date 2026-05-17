@@ -8,10 +8,9 @@ ARG CADDY_VERSION="2.10.2"
 
 # hadolint ignore=DL3018,DL3003
 RUN \
-    apk add --no-cache --upgrade \
+    apk upgrade --no-cache --available \
+    && apk add --no-cache \
         ca-certificates \
-        libcrypto3 \
-        libssl3 \
         openssl \
     \
     && apk add --no-cache --virtual .build \
