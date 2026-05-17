@@ -1,0 +1,43 @@
+---
+name: Caddy
+version: "0.1.0"
+slug: caddy
+description: Caddy reverse proxy with automatic Let's Encrypt certificates
+url: https://github.com/ad/ha-caddy
+arch:
+  - aarch64
+  - amd64
+  - armv7
+  - armhf
+  - i386
+startup: services
+init: false
+hassio_api: true
+host_network: false
+ports:
+  "80/tcp": 80
+  "443/tcp": 443
+  "443/udp": 443
+ports_description:
+  "80/tcp": HTTP (ACME HTTP-01 challenge)
+  "443/tcp": HTTPS
+  "443/udp": HTTP/3 (QUIC)
+map:
+  - addon_config:rw
+backup_exclude:
+  - "caddy/locks"
+options:
+  email: ""
+  log_level: info
+  proxies:
+    - domain: example.duckdns.org
+      upstream: 192.168.1.10:8080
+  extra_caddyfile: ""
+schema:
+  email: "email?"
+  log_level: "list(debug|info|warn|error)?"
+  proxies:
+    - domain: "str"
+      upstream: "str"
+      tls: "bool?"
+  extra_caddyfile: "str?"
