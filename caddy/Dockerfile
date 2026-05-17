@@ -1,45 +1,34 @@
+# syntax=docker/dockerfile:1.7
+ARG CADDY_VERSION=2.10.2
+ARG RATELIMIT_VERSION=v0.1.0
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+
+# ---- Stage 1: build Caddy with plugins via official xcaddy image ----
+FROM caddy:${CADDY_VERSION}-builder-alpine AS builder
+ARG RATELIMIT_VERSION
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg/mod \
+    xcaddy build \
+        --with github.com/mholt/caddy-ratelimit@${RATELIMIT_VERSION}
+
+# ---- Stage 2: addon runtime ----
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ARG CADDY_VERSION="2.10.2"
-
-# hadolint ignore=DL3018,DL3003
-RUN \
-    # hassio base pins packages in /etc/apk/world; strip pins so apk can
-    # transitively upgrade libcrypto3/musl when new deps require it.
-    sed -i -E 's/=[^ ]+//g' /etc/apk/world \
-    && apk upgrade --no-cache --available \
-    && apk add --no-cache \
+# hadolint ignore=DL3018
+RUN apk add --no-cache --no-progress \
         ca-certificates \
         openssl \
-    \
-    && apk add --no-cache --virtual .build \
-        go \
-        git \
-    \
-    && export GOPATH=/tmp/go \
-    && export PATH="${GOPATH}/bin:${PATH}" \
-    && export GOTOOLCHAIN=auto \
-    && go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest \
-    && cd /tmp \
-    && xcaddy build "v${CADDY_VERSION}" \
-        --with github.com/mholt/caddy-ratelimit \
-        --output /usr/bin/caddy \
-    \
-    && apk del --purge .build \
-    && rm -rf /tmp/* /root/.cache \
-    && /usr/bin/caddy version \
-    \
     && mkdir -p /etc/caddy /data /opt/ha-caddy/web
+
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy
+COPY rootfs /
 
 ENV \
     XDG_CONFIG_HOME=/data \
     XDG_DATA_HOME=/data
-
-COPY rootfs /
 
 EXPOSE 80 443 443/udp
 
