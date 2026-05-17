@@ -32,6 +32,13 @@ ZeroSSL по умолчанию.
 Уровень логирования Caddy: `debug`, `info` (по умолчанию), `warn`,
 `error`.
 
+### `access_log` / `access_log_roll_size_mb` / `access_log_roll_keep`
+
+Если `true` (по умолчанию) — на каждый прокси создаётся access-лог в
+`/data/logs/<domain>.log` в формате JSON. Ротация по размеру:
+`access_log_roll_size_mb` MiB (10 по умолчанию), хранится последних
+`access_log_roll_keep` файлов (5 по умолчанию).
+
 ### `proxies` (список)
 
 Каждый элемент:
@@ -41,6 +48,7 @@ ZeroSSL по умолчанию.
 | `domain` | string | Публичный домен (например, `home.example.com`). |
 | `upstream` | string | Куда проксировать: `host:port` (например, `192.168.1.10:8123`). |
 | `tls` | bool, optional | `false` → выписать самоподписанный сертификат (`tls internal`) вместо Let's Encrypt. Полезно для локального тестирования. По умолчанию `true`. |
+| `security_headers` | bool, optional | Добавить базовые security-заголовки: HSTS (1 год + subdomains), X-Content-Type-Options, Referrer-Policy. Также скрывает заголовок `Server`. По умолчанию `false`. Включайте только если бэкенд сам не ставит эти заголовки или совместим с HSTS. |
 
 ### `extra_caddyfile` (необязательно)
 

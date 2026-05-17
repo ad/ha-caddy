@@ -1,6 +1,6 @@
 ---
 name: Caddy
-version: "0.1.1"
+version: "0.2.0"
 slug: caddy
 description: Caddy reverse proxy with automatic Let's Encrypt certificates
 url: https://github.com/ad/ha-caddy
@@ -29,15 +29,23 @@ backup_exclude:
 options:
   email: ""
   log_level: info
+  access_log: true
+  access_log_roll_size_mb: 10
+  access_log_roll_keep: 5
   proxies:
     - domain: example.duckdns.org
       upstream: 192.168.1.10:8080
+      security_headers: true
   extra_caddyfile: ""
 schema:
   email: "email?"
   log_level: "list(debug|info|warn|error)?"
+  access_log: "bool?"
+  access_log_roll_size_mb: "int(1,1000)?"
+  access_log_roll_keep: "int(1,100)?"
   proxies:
     - domain: "str"
       upstream: "str"
       tls: "bool?"
+      security_headers: "bool?"
   extra_caddyfile: "str?"
