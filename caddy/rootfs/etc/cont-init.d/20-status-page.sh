@@ -121,9 +121,10 @@ HEAD
             if bashio::config.true "proxies[${index}].security_headers"; then
                 flags+='<span class="tag">security headers</span> '
             fi
-            rl_events=$(bashio::config "proxies[${index}].rate_limit_events" || true)
-            rl_window=$(bashio::config "proxies[${index}].rate_limit_window" || true)
-            if bashio::var.has_value "${rl_events}" && bashio::var.has_value "${rl_window}"; then
+            if bashio::config.has_value "proxies[${index}].rate_limit_events" \
+                && bashio::config.has_value "proxies[${index}].rate_limit_window"; then
+                rl_events=$(bashio::config "proxies[${index}].rate_limit_events")
+                rl_window=$(bashio::config "proxies[${index}].rate_limit_window")
                 flags+="<span class=\"tag\">rate-limit $(esc "${rl_events}")/$(esc "${rl_window}")</span> "
             fi
             if bashio::config.exists "proxies[${index}].tls" \

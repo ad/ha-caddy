@@ -126,9 +126,10 @@ for index in $(bashio::config 'proxies|keys'); do
             echo "    }"
         fi
 
-        rl_events=$(bashio::config "proxies[${index}].rate_limit_events" || true)
-        rl_window=$(bashio::config "proxies[${index}].rate_limit_window" || true)
-        if bashio::var.has_value "${rl_events}" && bashio::var.has_value "${rl_window}"; then
+        if bashio::config.has_value "proxies[${index}].rate_limit_events" \
+            && bashio::config.has_value "proxies[${index}].rate_limit_window"; then
+            rl_events=$(bashio::config "proxies[${index}].rate_limit_events")
+            rl_window=$(bashio::config "proxies[${index}].rate_limit_window")
             echo "    rate_limit {"
             echo "        zone proxy_${index} {"
             echo "            key {remote_host}"
