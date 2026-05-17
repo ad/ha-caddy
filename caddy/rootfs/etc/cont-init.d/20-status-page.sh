@@ -38,6 +38,21 @@ esc() {
 CADDY_VERSION=$(caddy version 2>/dev/null | awk '{print $1}')
 GENERATED_AT=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
 
+PATH_ROUTES_RAW=""
+if bashio::config.has_value 'path_routes'; then
+    PATH_ROUTES_RAW=$(bashio::config 'path_routes')
+fi
+
+routes_for_domain() {
+    local d="$1"
+    [[ -z "${PATH_ROUTES_RAW}" ]] && return
+    printf '%s\n' "${PATH_ROUTES_RAW}" | awk -v d="${d}" '
+        /^[[:space:]]*$/ { next }
+        /^[[:space:]]*#/ { next }
+        { if ($1 == d && NF >= 3) printf "%s\t%s\n", $2, $3 }
+    '
+}
+
 {
     cat <<HEAD
 <!doctype html>
@@ -88,16 +103,12 @@ HEAD
 
             # build upstream cell
             upstream_cell=""
-            routes_count=0
-            if bashio::config.exists "proxies[${index}].routes"; then
-                routes_count=$(bashio::config "proxies[${index}].routes|length" || echo 0)
-            fi
-            if [[ "${routes_count}" -gt 0 ]]; then
-                for r in $(seq 0 $((routes_count - 1))); do
-                    rpath=$(bashio::config "proxies[${index}].routes[${r}].path")
-                    rup=$(bashio::config "proxies[${index}].routes[${r}].upstream")
+            routes_text=$(routes_for_domain "${domain}")
+            if [[ -n "${routes_text}" ]]; then
+                while IFS=$'\t' read -r rpath rup; do
+                    [[ -z "${rpath}" ]] && continue
                     upstream_cell+="<code>$(esc "${rpath}")</code> → <code>$(esc "${rup}")</code><br>"
-                done
+                done <<< "${routes_text}"
                 if bashio::var.has_value "${default_upstream}"; then
                     upstream_cell+="<code>/*</code> → <code>$(esc "${default_upstream}")</code>"
                 fi

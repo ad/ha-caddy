@@ -46,24 +46,33 @@ ZeroSSL по умолчанию.
 | Поле | Тип | Описание |
 |------|-----|----------|
 | `domain` | string | Публичный домен (например, `home.example.com`). |
-| `upstream` | string, optional | Дефолтный апстрим: `host:port`. Срабатывает на пути, не попавшие в `routes`. Если указаны только `routes` — можно опустить. |
-| `routes` | list, optional | Path-based routing: список `{path, upstream}`. Каждый путь матчится в порядке объявления, `upstream` ловит остальное. |
+| `upstream` | string, optional | Дефолтный апстрим: `host:port`. Срабатывает на пути, не попавшие в `path_routes`. |
 | `tls` | bool, optional | `false` → самоподписанный сертификат (`tls internal`). Полезно для локального тестирования. По умолчанию `true`. |
 | `security_headers` | bool, optional | HSTS (1 год + subdomains), X-Content-Type-Options, Referrer-Policy, скрывает `Server`. По умолчанию `false`. |
 | `rate_limit_events` | int, optional | Сколько запросов разрешено с одного IP за окно. Требует и `rate_limit_window`. |
 | `rate_limit_window` | string, optional | Окно для лимита: `1s`, `1m`, `1h`. |
 
-### Path-based routing — пример
+### `path_routes` — path-based routing (необязательно)
+
+Многострочная строка, по одной записи на строку в формате:
+
+```
+<домен> <путь> <апстрим>
+```
+
+Пустые строки и строки, начинающиеся с `#`, игнорируются. Записи
+группируются по домену; `upstream` из `proxies` для того же домена
+становится catch-all (`/*`).
+
+Пример:
 
 ```yaml
 proxies:
   - domain: home.apatin.ru
-    routes:
-      - path: /grafana/*
-        upstream: 10.0.1.20:3000
-      - path: /api/*
-        upstream: 10.0.1.30:8000
     upstream: 10.0.1.19:8123     # всё остальное → Home Assistant
+path_routes: |
+  home.apatin.ru /grafana/* 10.0.1.20:3000
+  home.apatin.ru /api/* 10.0.1.30:8000
 ```
 
 ### Rate limiting — пример
