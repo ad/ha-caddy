@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:18.2.0
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -8,7 +8,10 @@ ARG CADDY_VERSION="2.10.2"
 
 # hadolint ignore=DL3018,DL3003
 RUN \
-    apk upgrade --no-cache --available \
+    # hassio base pins packages in /etc/apk/world; strip pins so apk can
+    # transitively upgrade libcrypto3/musl when new deps require it.
+    sed -i -E 's/=[^ ]+//g' /etc/apk/world \
+    && apk upgrade --no-cache --available \
     && apk add --no-cache \
         ca-certificates \
         openssl \
@@ -19,6 +22,7 @@ RUN \
     \
     && export GOPATH=/tmp/go \
     && export PATH="${GOPATH}/bin:${PATH}" \
+    && export GOTOOLCHAIN=auto \
     && go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest \
     && cd /tmp \
     && xcaddy build "v${CADDY_VERSION}" \
