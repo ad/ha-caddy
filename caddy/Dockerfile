@@ -4,12 +4,32 @@ FROM ${BUILD_FROM}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+ARG CADDY_VERSION="2.10.2"
+
+# hadolint ignore=DL3018,DL3003
 RUN \
     apk add --no-cache \
-        caddy \
         ca-certificates \
+        openssl \
+        wget \
     \
-    && mkdir -p /etc/caddy /data
+    && apk add --no-cache --virtual .build \
+        go \
+        git \
+    \
+    && export GOPATH=/tmp/go \
+    && export PATH="${GOPATH}/bin:${PATH}" \
+    && go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest \
+    && cd /tmp \
+    && xcaddy build "v${CADDY_VERSION}" \
+        --with github.com/mholt/caddy-ratelimit \
+        --output /usr/bin/caddy \
+    \
+    && apk del --purge .build \
+    && rm -rf /tmp/* /root/.cache \
+    && /usr/bin/caddy version \
+    \
+    && mkdir -p /etc/caddy /data /opt/ha-caddy/web
 
 ENV \
     XDG_CONFIG_HOME=/data \

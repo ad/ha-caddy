@@ -46,9 +46,43 @@ ZeroSSL по умолчанию.
 | Поле | Тип | Описание |
 |------|-----|----------|
 | `domain` | string | Публичный домен (например, `home.example.com`). |
-| `upstream` | string | Куда проксировать: `host:port` (например, `192.168.1.10:8123`). |
-| `tls` | bool, optional | `false` → выписать самоподписанный сертификат (`tls internal`) вместо Let's Encrypt. Полезно для локального тестирования. По умолчанию `true`. |
-| `security_headers` | bool, optional | Добавить базовые security-заголовки: HSTS (1 год + subdomains), X-Content-Type-Options, Referrer-Policy. Также скрывает заголовок `Server`. По умолчанию `false`. Включайте только если бэкенд сам не ставит эти заголовки или совместим с HSTS. |
+| `upstream` | string, optional | Дефолтный апстрим: `host:port`. Срабатывает на пути, не попавшие в `routes`. Если указаны только `routes` — можно опустить. |
+| `routes` | list, optional | Path-based routing: список `{path, upstream}`. Каждый путь матчится в порядке объявления, `upstream` ловит остальное. |
+| `tls` | bool, optional | `false` → самоподписанный сертификат (`tls internal`). Полезно для локального тестирования. По умолчанию `true`. |
+| `security_headers` | bool, optional | HSTS (1 год + subdomains), X-Content-Type-Options, Referrer-Policy, скрывает `Server`. По умолчанию `false`. |
+| `rate_limit_events` | int, optional | Сколько запросов разрешено с одного IP за окно. Требует и `rate_limit_window`. |
+| `rate_limit_window` | string, optional | Окно для лимита: `1s`, `1m`, `1h`. |
+
+### Path-based routing — пример
+
+```yaml
+proxies:
+  - domain: home.apatin.ru
+    routes:
+      - path: /grafana/*
+        upstream: 10.0.1.20:3000
+      - path: /api/*
+        upstream: 10.0.1.30:8000
+    upstream: 10.0.1.19:8123     # всё остальное → Home Assistant
+```
+
+### Rate limiting — пример
+
+Не больше 60 запросов в минуту с одного IP:
+
+```yaml
+proxies:
+  - domain: home.apatin.ru
+    upstream: 10.0.1.19:8123
+    rate_limit_events: 60
+    rate_limit_window: 1m
+```
+
+## Status page
+
+Иконка аддона в сайдбаре HA (или **Open Web UI**) открывает страницу со
+списком прокси, апстримами, сроком жизни сертификатов и активными
+флагами. Обновляется при каждом перезапуске аддона.
 
 ### `extra_caddyfile` (необязательно)
 
