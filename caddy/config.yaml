@@ -1,6 +1,6 @@
 ---
 name: Caddy
-version: "0.3.0"
+version: "0.3.1"
 slug: caddy
 description: Caddy reverse proxy with automatic Let's Encrypt certificates
 url: https://github.com/ad/ha-caddy

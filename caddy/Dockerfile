@@ -39,8 +39,8 @@ COPY rootfs /
 
 EXPOSE 80 443 443/udp
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD wget -q -O /dev/null http://localhost:2019/config/ || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD pidof caddy >/dev/null || exit 1
 
 ARG BUILD_ARCH
 ARG BUILD_DATE
