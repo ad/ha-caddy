@@ -60,10 +60,12 @@ if bashio::config.has_value 'extra_caddyfile'; then
     } >> "${CADDYFILE}"
 fi
 
+bashio::log.info "Generated Caddyfile:"
+cat "${CADDYFILE}"
+
 bashio::log.info "Validating generated Caddyfile..."
 if ! caddy validate --config "${CADDYFILE}" --adapter caddyfile; then
-    bashio::log.fatal "Caddyfile validation failed. Contents:"
-    cat "${CADDYFILE}" >&2
+    bashio::log.fatal "Caddyfile validation failed."
     bashio::exit.nok
 fi
 
