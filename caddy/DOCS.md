@@ -68,11 +68,11 @@ ZeroSSL по умолчанию.
 
 ```yaml
 proxies:
-  - domain: home.apatin.ru
-    upstream: 10.0.1.19:8123     # всё остальное → Home Assistant
+  - domain: home.example.com
+    upstream: 10.0.1.2:8123     # всё остальное → Home Assistant
 path_routes: |
-  home.apatin.ru /grafana/* 10.0.1.20:3000
-  home.apatin.ru /api/* 10.0.1.30:8000
+  home.example.com /grafana/* 10.0.1.20:3000
+  home.example.com /api/* 10.0.1.30:8000
 ```
 
 ### Rate limiting — пример
@@ -81,8 +81,8 @@ path_routes: |
 
 ```yaml
 proxies:
-  - domain: home.apatin.ru
-    upstream: 10.0.1.19:8123
+  - domain: home.example.com
+    upstream: 10.0.1.2:8123
     rate_limit_events: 60
     rate_limit_window: 1m
 ```
