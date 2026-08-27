@@ -17,9 +17,13 @@ FROM ${BUILD_FROM}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+# libcrypto3/libssl3 are pinned in the base image's apk world; adding them
+# unpinned drops the pin so the openssl CLI can pull its matching version.
 # hadolint ignore=DL3018
 RUN apk add --no-cache --no-progress \
         ca-certificates \
+        libcrypto3 \
+        libssl3 \
         openssl \
     && mkdir -p /etc/caddy /data /opt/ha-caddy/web
 
