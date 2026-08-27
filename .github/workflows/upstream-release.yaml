@@ -1,0 +1,77 @@
+name: Upstream release check
+
+on:
+  schedule:
+    - cron: "23 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+      sha: ${{ steps.check.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v7
+
+      # Addon version == pinned Caddy version. Addon-only changes are released by
+      # hand-bumping a fourth component (2.11.4 -> 2.11.4.1); the next upstream
+      # release resets it back to a plain three-component Caddy version.
+      - id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          latest=$(gh release view --repo caddyserver/caddy --json tagName -q .tagName)
+          latest=${latest#v}
+          current=$(sed -n 's/^ARG CADDY_VERSION=//p' caddy/Dockerfile)
+          echo "current=$current latest=$latest"
+
+          newest=$(printf '%s\n%s\n' "$current" "$latest" | sort -V | tail -n1)
+          if [ "$latest" = "$current" ] || [ "$newest" != "$latest" ]; then
+            echo "Nothing to do."
+            exit 0
+          fi
+
+          sed -i "s/^ARG CADDY_VERSION=.*/ARG CADDY_VERSION=${latest}/" caddy/Dockerfile
+          sed -i "s/^version: .*/version: \"${latest}\"/" caddy/config.yaml
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "caddy ${latest}"
+          git push
+
+          echo "version=${latest}" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: bump
+    if: needs.bump.outputs.version != ''
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    uses: ./.github/workflows/build.yaml
+    with:
+      ref: ${{ needs.bump.outputs.sha }}
+
+  release:
+    needs:
+      - bump
+      - build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.bump.outputs.sha }}
+
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.bump.outputs.version }}
+        run: |
+          gh release create "$VERSION" \
+            --title "$VERSION" \
+            --notes "Upstream: https://github.com/caddyserver/caddy/releases/tag/v${VERSION}"

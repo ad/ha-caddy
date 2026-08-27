@@ -1,0 +1,79 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit/ref to build (defaults to the triggering commit)
+        type: string
+        required: false
+        default: ""
+  push:
+    branches:
+      - main
+    paths:
+      - caddy/**
+
+env:
+  ARCHITECTURES: '["amd64", "aarch64"]'
+  IMAGE_NAME: caddy
+
+permissions:
+  contents: read
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - id: matrix
+        uses: home-assistant/builder/actions/prepare-multi-arch-matrix@2026.03.2
+        with:
+          architectures: ${{ env.ARCHITECTURES }}
+          image-name: ${{ env.IMAGE_NAME }}
+
+      - id: version
+        run: |
+          sed -n 's/^version: "\(.*\)"$/version=\1/p' caddy/config.yaml >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: init
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.init.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - uses: home-assistant/builder/actions/build-image@2026.03.2
+        with:
+          arch: ${{ matrix.arch }}
+          build-args: |
+            BUILD_NAME=Caddy
+            BUILD_DESCRIPTION=Caddy reverse proxy with automatic Let's Encrypt certificates
+            BUILD_REF=${{ inputs.ref || github.sha }}
+            BUILD_REPOSITORY=${{ github.repository }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          context: caddy
+          image: ${{ matrix.image }}
+          image-tags: |
+            ${{ needs.init.outputs.version }}
+            latest
+          labels: |
+            io.hass.name=Caddy
+            io.hass.type=addon
+          push: "true"
+          version: ${{ needs.init.outputs.version }}
