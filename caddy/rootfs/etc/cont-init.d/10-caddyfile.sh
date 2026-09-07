@@ -15,6 +15,12 @@ ROLL_KEEP=$(bashio::config 'access_log_roll_keep')
 : "${ROLL_SIZE:=10}"
 : "${ROLL_KEEP:=5}"
 
+# Global default body-size limit; empty means unlimited (Caddy's own default).
+MAX_BODY_SIZE=""
+if bashio::config.has_value 'max_body_size'; then
+    MAX_BODY_SIZE=$(bashio::config 'max_body_size')
+fi
+
 # Parse path_routes (top-level optional multi-line string).
 # Format per line: "<domain> <path> <upstream>"
 # Lines starting with # or empty are skipped.
@@ -123,6 +129,16 @@ for index in $(bashio::config 'proxies|keys'); do
             echo "        X-Content-Type-Options \"nosniff\""
             echo "        Referrer-Policy \"strict-origin-when-cross-origin\""
             echo "        -Server"
+            echo "    }"
+        fi
+
+        max_body="${MAX_BODY_SIZE}"
+        if bashio::config.has_value "proxies[${index}].max_body_size"; then
+            max_body=$(bashio::config "proxies[${index}].max_body_size")
+        fi
+        if bashio::var.has_value "${max_body}"; then
+            echo "    request_body {"
+            echo "        max_size ${max_body}"
             echo "    }"
         fi
 

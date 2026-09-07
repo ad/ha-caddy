@@ -39,6 +39,22 @@ ZeroSSL по умолчанию.
 `access_log_roll_size_mb` MiB (10 по умолчанию), хранится последних
 `access_log_roll_keep` файлов (5 по умолчанию).
 
+### `max_body_size` (необязательно)
+
+Максимальный размер тела запроса (`request_body { max_size ... }`).
+Пусто (по умолчанию) — без ограничения, как у Caddy из коробки.
+Принимает размеры: `10MB`, `512MiB`, `2GB` или число байт.
+Задаёт значение по умолчанию для всех прокси; переопределяется
+на уровне отдельного прокси.
+
+Важно: эта опция может только **ограничить** загрузку, поднять лимит
+апстрима она не может. Ошибка вида
+`Maximum request body size 16777216 exceeded` приходит **не от Caddy** —
+это aiohttp внутри Home Assistant (`MAX_CLIENT_SIZE` = 16 MiB), и
+Caddyfile на неё не влияет. Большой бэкап заливайте не через веб-форму,
+а положите `.tar` в папку `/backup` (add-on Samba / SSH / File editor) —
+он появится в списке бэкапов после `Backups → перезагрузить`.
+
 ### `proxies` (список)
 
 Каждый элемент:
@@ -51,6 +67,7 @@ ZeroSSL по умолчанию.
 | `security_headers` | bool, optional | HSTS (1 год + subdomains), X-Content-Type-Options, Referrer-Policy, скрывает `Server`. По умолчанию `false`. |
 | `rate_limit_events` | int, optional | Сколько запросов разрешено с одного IP за окно. Требует и `rate_limit_window`. |
 | `rate_limit_window` | string, optional | Окно для лимита: `1s`, `1m`, `1h`. |
+| `max_body_size` | string, optional | Лимит размера тела запроса для этого домена. Переопределяет глобальный `max_body_size`. |
 
 ### `path_routes` — path-based routing (необязательно)
 

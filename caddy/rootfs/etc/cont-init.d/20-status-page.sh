@@ -38,6 +38,11 @@ esc() {
 CADDY_VERSION=$(caddy version 2>/dev/null | awk '{print $1}')
 GENERATED_AT=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
 
+MAX_BODY_SIZE=""
+if bashio::config.has_value 'max_body_size'; then
+    MAX_BODY_SIZE=$(bashio::config 'max_body_size')
+fi
+
 PATH_ROUTES_RAW=""
 if bashio::config.has_value 'path_routes'; then
     PATH_ROUTES_RAW=$(bashio::config 'path_routes')
@@ -130,6 +135,13 @@ HEAD
             if bashio::config.exists "proxies[${index}].tls" \
                 && bashio::config.false "proxies[${index}].tls"; then
                 flags+='<span class="tag warn">tls internal</span> '
+            fi
+            max_body="${MAX_BODY_SIZE}"
+            if bashio::config.has_value "proxies[${index}].max_body_size"; then
+                max_body=$(bashio::config "proxies[${index}].max_body_size")
+            fi
+            if bashio::var.has_value "${max_body}"; then
+                flags+="<span class=\"tag\">max body $(esc "${max_body}")</span> "
             fi
 
             cert_class="ok"
