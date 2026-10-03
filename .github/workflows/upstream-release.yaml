@@ -36,6 +36,12 @@ jobs:
             exit 0
           fi
 
+          # Docker Hub lags behind GitHub releases; wait for the builder image.
+          if ! docker manifest inspect "caddy:${latest}-builder-alpine" >/dev/null 2>&1; then
+            echo "caddy:${latest}-builder-alpine not on Docker Hub yet, retry next run."
+            exit 0
+          fi
+
           sed -i "s/^ARG CADDY_VERSION=.*/ARG CADDY_VERSION=${latest}/" caddy/Dockerfile
           sed -i "s/^version: .*/version: \"${latest}\"/" caddy/config.yaml
 

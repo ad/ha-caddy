@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-ARG CADDY_VERSION=2.11.7
+ARG CADDY_VERSION=2.11.6
 ARG RATELIMIT_VERSION=v0.1.0
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
 
