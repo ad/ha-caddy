@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DB=/config/geoip/DBIP-City-Lite.mmdb
+DB=${1:?usage: geoip-download.sh <output.mmdb>}
 mkdir -p "$(dirname "${DB}")"
-# same filesystem as DB: mv must be an atomic rename, Caddy mmaps the old file
-TMP=$(mktemp -p "$(dirname "${DB}")")
-trap 'rm -f "${TMP}"' EXIT
 
 year=$(date -u +%Y)
 month=$((10#$(date -u +%m)))
@@ -13,9 +10,8 @@ month=$((10#$(date -u +%m)))
 for _ in 0 1 2; do
     ym=$(printf '%d-%02d' "${year}" "${month}")
     if curl -fsS --max-time 300 "https://download.db-ip.com/free/dbip-city-lite-${ym}.mmdb.gz" \
-        | gunzip > "${TMP}" 2>/dev/null && [[ $(wc -c < "${TMP}") -gt 10000000 ]]; then
-        mv "${TMP}" "${DB}"
-        echo "GeoIP database updated: ${ym}"
+        | gunzip > "${DB}" 2>/dev/null && [[ $(wc -c < "${DB}") -gt 10000000 ]]; then
+        echo "GeoIP database: ${ym}"
         exit 0
     fi
     month=$((month - 1))

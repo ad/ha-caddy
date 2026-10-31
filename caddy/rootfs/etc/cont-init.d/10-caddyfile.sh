@@ -65,7 +65,7 @@ routes_for_domain() {
     if bashio::config.true 'geoip'; then
         echo "    order geoip2_vars first"
         echo "    geoip2 {"
-        echo "        databaseDirectory /config/geoip"
+        echo "        databaseDirectory /opt/geoip"
         echo "        editionID DBIP-City-Lite"
         echo "    }"
     fi

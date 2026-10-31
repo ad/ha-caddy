@@ -14,7 +14,13 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
         --with github.com/mholt/caddy-ratelimit@${RATELIMIT_VERSION} \
         --with github.com/zhangjiayin/caddy-geoip2@${GEOIP2_VERSION}
 
-# ---- Stage 2: addon runtime ----
+# ---- Stage 2: DB-IP City Lite for the geoip option ----
+# hadolint ignore=DL3006
+FROM ${BUILD_FROM} AS geoip
+COPY geoip-download.sh /tmp/geoip-download.sh
+RUN bash /tmp/geoip-download.sh /opt/geoip/DBIP-City-Lite.mmdb
+
+# ---- Stage 3: addon runtime ----
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
@@ -31,6 +37,7 @@ RUN apk add --no-cache --no-progress \
     && mkdir -p /etc/caddy /data /opt/ha-caddy/web
 
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
+COPY --from=geoip /opt/geoip /opt/geoip
 COPY rootfs /
 
 ENV \
