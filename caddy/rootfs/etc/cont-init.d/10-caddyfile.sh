@@ -61,6 +61,14 @@ routes_for_domain() {
     fi
 
     echo "    order rate_limit before basicauth"
+
+    if bashio::config.true 'geoip'; then
+        echo "    order geoip2_vars first"
+        echo "    geoip2 {"
+        echo "        databaseDirectory /data/geoip"
+        echo "        editionID DBIP-City-Lite"
+        echo "    }"
+    fi
     echo "}"
     echo ""
 } > "${CADDYFILE}"

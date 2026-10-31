@@ -1,6 +1,6 @@
 ---
 name: Caddy
-version: "2.11.7"
+version: "2.11.7.1"
 slug: caddy
 description: Caddy reverse proxy with automatic Let's Encrypt certificates
 url: https://github.com/ad/ha-caddy
@@ -29,6 +29,7 @@ map:
 backup_exclude:
   - "caddy/locks"
   - "logs"
+  - "geoip"
 options:
   email: ""
   log_level: info
@@ -42,6 +43,7 @@ options:
   path_routes: ""
   extra_caddyfile: ""
   max_body_size: ""
+  geoip: false
 schema:
   email: "email?"
   log_level: "list(debug|info|warn|error)?"
@@ -59,3 +61,4 @@ schema:
       max_body_size: "str?"
   path_routes: "str?"
   extra_caddyfile: "str?"
+  geoip: "bool?"

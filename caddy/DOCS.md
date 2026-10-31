@@ -116,6 +116,25 @@ proxies:
 сгенерированного конфига. Используйте для продвинутых сценариев
 (matchers, headers, basic auth и т.п.).
 
+### `geoip` (необязательно)
+
+`true` включает модуль [caddy-geoip2](https://github.com/zhangjiayin/caddy-geoip2)
+с базой [DB-IP City Lite](https://db-ip.com/db/download/ip-to-city-lite)
+(CC-BY, без аккаунта и ключа). База скачивается при старте аддона в
+`/data/geoip/` и обновляется раз в месяц. В бэкап HA она не попадает.
+
+Модуль только даёт плейсхолдеры, использовать их — в `extra_caddyfile`:
+
+```
+example.com {
+    geoip2_vars strict
+    reverse_proxy 192.168.1.10:8080 {
+        header_up X-Geo-Country {geoip2.country_code}
+        header_up X-Geo-City {geoip2.city_name}
+    }
+}
+```
+
 ## Пример
 
 ```yaml

@@ -1,15 +1,18 @@
 # syntax=docker/dockerfile:1.7
 ARG CADDY_VERSION=2.11.7
 ARG RATELIMIT_VERSION=v0.1.0
+ARG GEOIP2_VERSION=v1.3.1
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
 
 # ---- Stage 1: build Caddy with plugins via official xcaddy image ----
 FROM caddy:${CADDY_VERSION}-builder-alpine AS builder
 ARG RATELIMIT_VERSION
+ARG GEOIP2_VERSION
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
     xcaddy build \
-        --with github.com/mholt/caddy-ratelimit@${RATELIMIT_VERSION}
+        --with github.com/mholt/caddy-ratelimit@${RATELIMIT_VERSION} \
+        --with github.com/zhangjiayin/caddy-geoip2@${GEOIP2_VERSION}
 
 # ---- Stage 2: addon runtime ----
 # hadolint ignore=DL3006
