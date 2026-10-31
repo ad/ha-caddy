@@ -56,7 +56,7 @@ LABEL \
     io.hass.arch="${BUILD_ARCH}" \
     io.hass.type="addon" \
     io.hass.version="${BUILD_VERSION}" \
-    maintainer="ad <unsecuredregister@gmail.com>" \
+    maintainer="ad <github@apatin.ru>" \
     org.opencontainers.image.title="${BUILD_NAME}" \
     org.opencontainers.image.description="${BUILD_DESCRIPTION}" \
     org.opencontainers.image.source="${BUILD_REPOSITORY}" \
