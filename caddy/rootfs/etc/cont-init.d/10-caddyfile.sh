@@ -187,7 +187,8 @@ done
 if bashio::config.has_value 'extra_caddyfile'; then
     {
         echo "# --- extra_caddyfile ---"
-        bashio::config 'extra_caddyfile'
+        # bashio 0.17.5 trips set -e when bashio::config runs as a bare command
+        echo "$(bashio::config 'extra_caddyfile')"
         echo ""
     } >> "${CADDYFILE}"
 fi
