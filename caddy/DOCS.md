@@ -121,7 +121,10 @@ proxies:
 `true` включает модуль [caddy-geoip2](https://github.com/zhangjiayin/caddy-geoip2)
 с базой [DB-IP City Lite](https://db-ip.com/db/download/ip-to-city-lite)
 (CC-BY, без аккаунта и ключа). База скачивается при старте аддона в
-`/data/geoip/` и обновляется раз в месяц. В бэкап HA она не попадает.
+`/config/geoip/` и обновляется раз в месяц. Если db-ip.com недоступен,
+положите файл вручную в
+`/addon_configs/<slug>_caddy/geoip/DBIP-City-Lite.mmdb` (add-on Samba / SSH)
+и перезапустите аддон.
 
 Модуль только даёт плейсхолдеры, использовать их — в `extra_caddyfile`:
 

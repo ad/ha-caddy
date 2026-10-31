@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DB=/data/geoip/DBIP-City-Lite.mmdb
+DB=/config/geoip/DBIP-City-Lite.mmdb
 mkdir -p "$(dirname "${DB}")"
 # same filesystem as DB: mv must be an atomic rename, Caddy mmaps the old file
 TMP=$(mktemp -p "$(dirname "${DB}")")

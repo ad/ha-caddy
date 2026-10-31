@@ -5,7 +5,7 @@ fi
 
 while true; do
     sleep 86400
-    if [[ -n $(find /data/geoip/DBIP-City-Lite.mmdb -mtime -30 2>/dev/null) ]]; then
+    if [[ -n $(find /config/geoip/DBIP-City-Lite.mmdb -mtime -30 2>/dev/null) ]]; then
         continue
     fi
     geoip-update && caddy reload --force --config /etc/caddy/Caddyfile --adapter caddyfile
